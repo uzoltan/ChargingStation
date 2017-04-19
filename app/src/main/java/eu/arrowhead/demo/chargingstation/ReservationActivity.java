@@ -11,6 +11,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -50,6 +51,8 @@ import eu.arrowhead.demo.chargingstation.utility.Networking;
 import eu.arrowhead.demo.chargingstation.utility.PermissionUtils;
 import eu.arrowhead.demo.chargingstation.utility.Utility;
 
+import static eu.arrowhead.demo.chargingstation.R.id.map;
+
 public class ReservationActivity extends FragmentActivity implements
         OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -59,6 +62,7 @@ public class ReservationActivity extends FragmentActivity implements
 
     GoogleMap mGoogleMap;
     SupportMapFragment mapFrag;
+    Marker selectedStation;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
@@ -76,7 +80,7 @@ public class ReservationActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reservation);
 
-        mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(map);
         mapFrag.getMapAsync(this);
 
         reserveCharging = (Button) findViewById(R.id.reserve_charging_button);
@@ -96,6 +100,24 @@ public class ReservationActivity extends FragmentActivity implements
             DialogFragment newFragment = new NeedInternetDialog();
             newFragment.show(getSupportFragmentManager(), NeedInternetDialog.TAG);
         }
+
+        reserveCharging.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if(Utility.isConnected(ReservationActivity.this)){
+                    if(selectedStation != null || !selectedStation.isInfoWindowShown()){
+                        reserveChargingStation(selectedStation.getPosition());
+                    }
+                    else{
+                        Toast.makeText(ReservationActivity.this, R.string.select_charging_station, Toast.LENGTH_LONG).show();
+                    }
+                }
+                else{
+                    Toast.makeText(ReservationActivity.this, R.string.no_internet_warning, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -127,6 +149,15 @@ public class ReservationActivity extends FragmentActivity implements
             buildGoogleApiClient();
             mGoogleMap.setMyLocationEnabled(true);
         }
+
+        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+        {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                selectedStation = marker;
+                return false;
+            }
+        });
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -277,5 +308,33 @@ public class ReservationActivity extends FragmentActivity implements
                 getChargingStations();
             }
         }
+    }
+
+    public void reserveChargingStation(LatLng position) {
+        String requestURL = PROVIDER_URL.concat("/reserve/" + position.latitude + "/" + position.longitude);
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, requestURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        ChargingStation station = Utility.fromJsonObject(response.toString(), ChargingStation.class);
+                        selectedStation.setSnippet("Free charging slots: " + station.getFreeSlots() + "/" + station.getMaxSlots());
+                        if (station.getFreeSlots() == 0) {
+                            selectedStation.setIcon((BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.i("reserverStation_error", error.toString());
+                        Toast.makeText(ReservationActivity.this, "Network error: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+        jsObjRequest.setRetryPolicy(new DefaultRetryPolicy((int) TimeUnit.SECONDS.toMillis(15),
+                2,  // maxNumRetries = 0 means no retry
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        Networking.getInstance(ReservationActivity.this).addToRequestQueue(jsObjRequest);
     }
 }

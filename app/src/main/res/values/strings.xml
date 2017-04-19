@@ -28,4 +28,5 @@
     <string name="user_input_dialog_title">Necessary user inputs</string>
     <string name="restart_app_with_internet">Please restart the app WITH internet connection!</string>
     <string name="need_internet_dialog">This app needs to have internet connection! Please turn it on now, to discard this window.</string>
+    <string name="select_charging_station">Please select the charging station you want to use on the map.</string>
 </resources>
