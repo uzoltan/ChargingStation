@@ -10,7 +10,7 @@
         android:layout_gravity="center"
         android:paddingTop="20dp"
         android:paddingLeft="10dp"
-        android:text="@string/need_internet_dialog"
+        android:text="@string/confirm_stop_charging"
         android:textColor="@color/black"
         android:textSize="20sp" />
 
