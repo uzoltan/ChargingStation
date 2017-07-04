@@ -424,9 +424,7 @@ public class ReservationActivity extends FragmentActivity implements
                     public void onResponse(JSONObject response) {
                         ChargingStation station = Utility.fromJsonObject(response.toString(), ChargingStation.class);
                         stationUsed.setSnippet("Free charging slots: " + station.getFreeSlots() + "/" + station.getMaxSlots());
-                        if (station.getFreeSlots() == 0) {
-                            stationUsed.setIcon((BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                        }
+                        stationUsed.setIcon((BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                         if(stationUsed.isInfoWindowShown()){
                             stationUsed.hideInfoWindow();
                             stationUsed.showInfoWindow();
@@ -548,6 +546,9 @@ public class ReservationActivity extends FragmentActivity implements
                         stationUsed.setSnippet("Free charging slots: " + station.getFreeSlots() + "/" + station.getMaxSlots());
                         if (station.getFreeSlots() != 0) {
                             stationUsed.setIcon((BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                        }
+                        else{
+                            stationUsed.setIcon((BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                         }
                         if(stationUsed.isInfoWindowShown()){
                             stationUsed.hideInfoWindow();
