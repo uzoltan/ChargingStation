@@ -27,4 +27,5 @@
     <string name="stations_placed_on_map">Charing stations placed on map.</string>
     <string name="station_reserved">Charging station reserved!</string>
     <string name="finished_charging">Finished charging.</string>
+    <string name="no_backend_response">No response from REST backend</string>
 </resources>

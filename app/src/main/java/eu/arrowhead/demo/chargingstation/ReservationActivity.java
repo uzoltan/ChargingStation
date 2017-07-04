@@ -387,8 +387,13 @@ public class ReservationActivity extends FragmentActivity implements
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        i("gtChargingStationsError", String.valueOf(error.networkResponse.statusCode));
-                        Toast.makeText(ReservationActivity.this, error.networkResponse.toString(), Toast.LENGTH_LONG).show();
+                        if(error.networkResponse != null){
+                            i("gtChargingStationsError", String.valueOf(error.networkResponse.statusCode));
+                            Toast.makeText(ReservationActivity.this, error.networkResponse.toString(), Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            Log.i("gtChargingStationsError", getString(R.string.no_backend_response));
+                        }
                     }
                 }
         );
